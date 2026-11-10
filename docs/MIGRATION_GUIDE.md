@@ -1,7 +1,7 @@
 # Database Migration & Connectivity Guide
 
 > **ORM:** Prisma ORM (`@prisma/client` & `prisma`)  
-> **Database:** SQLite (`file:./platform.db` relative to `frontend/prisma/schema.prisma`)  
+> **Database:** SQLite (`file:./dev.db` relative to `frontend/prisma/schema.prisma`)  
 > **Working Directory:** `frontend/`
 
 ## 1. Environment Setup
@@ -13,7 +13,7 @@
    ```
 2. Ensure `DATABASE_URL` points to the local SQLite database file:
    ```env
-   DATABASE_URL="file:./platform.db"
+   DATABASE_URL="file:./dev.db"
    ```
 3. Generate a cryptographic `AUTH_SECRET` for Auth.js:
    ```bash

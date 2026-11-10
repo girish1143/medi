@@ -1,0 +1,26 @@
+{
+  "name": "hospital-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hospital & Doctor Lead Generation Platform (Decoupled Next.js Frontend + Express.js Backend + SQLite Prisma ORM)",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "db:validate": "npm --prefix backend run db:validate",
+    "db:generate": "npm --prefix backend run db:generate",
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "db:status": "npm --prefix backend run db:status",
+    "env:check": "bash scripts/check-environment.sh"
+  }
+}

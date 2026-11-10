@@ -1,0 +1,33 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify no .env or SQLite database files are tracked in git
+        run: |
+          if git ls-files | grep -E '(\.env($|\.)|\.db($|-))' | grep -v '\.env\.example$'; then
+            echo "Forbidden secret or database file is tracked in git!" >&2
+            exit 1
+          fi
+      - name: Verify no Supabase dependencies or clients remain
+        run: |
+          if grep -ri '@supabase/supabase-js' frontend/ backend/ 2>/dev/null; then
+            echo "Forbidden Supabase dependency detected!" >&2
+            exit 1
+          fi
+      - name: Audit backend npm dependencies
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+      - name: Audit frontend npm dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high

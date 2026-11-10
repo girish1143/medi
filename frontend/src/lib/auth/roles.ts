@@ -6,10 +6,10 @@ import type { UserRole } from '../domain/enums';
  * authorization is strictly enforced server-side via RBAC and Prisma queries.
  */
 export const ROLE_HOME_ROUTES: Record<UserRole, string> = {
-  SUPER_ADMIN: '/admin/super',
-  OPERATIONS_ADMIN: '/admin/operations',
-  FINANCE_ADMIN: '/admin/finance',
-  SUPPORT_ADMIN: '/admin/support',
+  SUPER_ADMIN: '/admin',
+  OPERATIONS_ADMIN: '/admin',
+  FINANCE_ADMIN: '/admin',
+  SUPPORT_ADMIN: '/admin',
   PATIENT: '/patient',
   DOCTOR: '/doctor',
   HOSPITAL: '/hospital',

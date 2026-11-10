@@ -23,9 +23,31 @@ export const ACCOUNT_STATUSES = [
   'PENDING_VERIFICATION',
   'ACTIVE',
   'SUSPENDED',
+  'REJECTED',
   'DEACTIVATED',
 ] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
+
+export const AUTH_TOKEN_PURPOSES = ['EMAIL_VERIFICATION', 'PASSWORD_RESET'] as const;
+export type AuthTokenPurpose = (typeof AUTH_TOKEN_PURPOSES)[number];
+
+export const APPOINTMENT_STATUSES = [
+  'REQUESTED',
+  'CONFIRMED',
+  'COMPLETED',
+  'CANCELLED',
+  'NO_SHOW',
+] as const;
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+export const CONTACT_REQUEST_STATUSES = [
+  'PENDING',
+  'APPROVED',
+  'SHARED',
+  'COMPLETED',
+  'REJECTED',
+] as const;
+export type ContactRequestStatus = (typeof CONTACT_REQUEST_STATUSES)[number];
 
 export const VERIFICATION_STATUSES = [
   'PENDING',

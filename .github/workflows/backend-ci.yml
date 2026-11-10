@@ -1,0 +1,45 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+jobs:
+  verify-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      NODE_ENV: test
+      DATABASE_URL: file:./prisma/ci-test.db
+      JWT_ACCESS_SECRET: ci-access-secret-minimum-32-characters-long-123456
+      JWT_REFRESH_SECRET: ci-refresh-secret-minimum-32-characters-long-654321
+      FRONTEND_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Prisma schema & generate client
+        run: |
+          npm run db:validate
+          npm run db:generate
+          npm run db:deploy
+      - name: TypeScript typecheck
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint
+      - name: Vitest suite
+        run: npm test
+      - name: Build backend bundle
+        run: npm run build

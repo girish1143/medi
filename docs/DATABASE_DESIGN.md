@@ -1,8 +1,7 @@
 # Database Design (Prisma ORM + SQLite)
 
-> **Primary Application ORM & Database:** Prisma 6+ with SQLite (`frontend/prisma/schema.prisma`)  
-> **Seed Policy:** Zero dummy data. Schema and migrations initialize completely empty.  
-> **Step 1 Reference Artifacts:** Initial PostgreSQL/Supabase DDL baselines are preserved in `database/migrations/` per project layout decision.
+> **Primary Application ORM & Database:** Prisma 6+ with SQLite (`frontend/prisma/schema.prisma`, `DATABASE_URL="file:./dev.db"`)  
+> **Seed Policy:** Zero dummy data. Schema and migrations initialize completely empty.
 
 ## 1. Design Principles & SQLite Adaptation
 

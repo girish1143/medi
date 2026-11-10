@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const backendOrigin =
+      process.env.BACKEND_INTERNAL_ORIGIN?.replace(/\/$/, '') ?? 'http://127.0.0.1:4000';
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: `${backendOrigin}/api/v1/:path*`,
+      },
+      {
+        source: '/api/:path*',
+        destination: `${backendOrigin}/api/v1/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

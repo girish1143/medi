@@ -107,7 +107,7 @@ flowchart TD
     end
 
     subgraph StorageEngine["5. Physical Storage"]
-        PrimaryDB[("Relational Database (platform.db / PostgreSQL)")]
+        PrimaryDB[("Relational Database (dev.db / PostgreSQL)")]
     end
 
     PresentationLayer --> AuthLayer
@@ -376,7 +376,7 @@ flowchart LR
     subgraph Phase1["Phase 1 & 2 (Established Foundation)"]
         direction TB
         F1["Next.js 15 Full-Stack App"]
-        F2["Prisma ORM with SQLite (platform.db)"]
+        F2["Prisma ORM with SQLite (dev.db)"]
         F3["Auth.js v5 JWT Engine"]
         F4["20 Relational Models & Integrity Gates"]
     end
@@ -401,6 +401,6 @@ flowchart LR
     Phase3 --> Phase4
 ```
 
-- **Database Engine Portability:** Because all models use UUIDv4 strings, ISO-4217 currency pairs, and standard relations, migrating from local SQLite (`platform.db`) to enterprise PostgreSQL requires changing only the `datasource db` provider in `schema.prisma`.
+- **Database Engine Portability:** Because all models use UUIDv4 strings, ISO-4217 currency pairs, and standard relations, migrating from local SQLite (`dev.db`) to enterprise PostgreSQL requires changing only the `datasource db` provider in `schema.prisma`.
 - **Background Jobs:** Asynchronous SLA timers (expiring unaccepted lead offers after 24–48 hours) and batch re-matching cascade loops will transition from Next.js Route Handlers to dedicated queue workers (e.g. BullMQ on Redis).
 - **Zero-Dummy-Data Guarantee:** The system transitions from foundation to production with an empty, verified database ready for genuine user registration and verified provider onboarding.
