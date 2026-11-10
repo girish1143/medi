@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+.next/
+out/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# local database & storage
+.pgdata/
+backend/.pgdata/
+backend/storage/
+*.log
+
+# misc
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+next-env.d.ts
+tsconfig.tsbuildinfo
