@@ -1,33 +1,28 @@
-# dependencies
+# Dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# builds
+# Builds
 .next/
 out/
 dist/
 build/
 coverage/
-playwright-report/
-test-results/
+*.tsbuildinfo
+next-env.d.ts
 
-# environment
+# Environment files (never commit real secrets)
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
 
-# local database & storage
-.pgdata/
-backend/.pgdata/
-backend/storage/
-*.log
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
-# misc
+# Logs & OS artifacts
+*.log
+npm-debug.log*
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
-next-env.d.ts
-tsconfig.tsbuildinfo

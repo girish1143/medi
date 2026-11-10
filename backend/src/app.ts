@@ -1,95 +1,61 @@
-import crypto from 'node:crypto';
-import express, { Request } from 'express';
 import cors from 'cors';
+import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
-import compression from 'compression';
-import cookieParser from 'cookie-parser';
-import pinoHttp from 'pino-http';
-import { env } from './config/env';
-import { logger } from './config/logger';
-import { apiLimiter } from './middlewares/rateLimit';
-import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
-import routes from './routes';
-import { pool } from './config/database';
+import { getBackendEnv, type BackendEnv } from './config/env.js';
+import { getSupabaseServiceClient } from './config/supabase.js';
+import {
+  createAuthMiddleware,
+  createSupabaseAuthResolver,
+  type AuthTokenResolver,
+} from './middleware/auth.js';
+import { errorHandlerMiddleware } from './middleware/errorHandler.js';
+import { requestIdMiddleware } from './middleware/requestId.js';
+import { createModuleBoundaryRouter } from './modules/boundaryFactory.js';
+import { createHealthRouter } from './modules/health/routes.js';
+import { MODULE_BOUNDARIES } from './modules/registry.js';
+import { NotFoundError } from './utils/errors.js';
 
-export function createApp() {
+export interface CreateAppOptions {
+  env?: BackendEnv;
+  authResolver?: AuthTokenResolver;
+}
+
+/**
+ * Constructs and configures the Express application with security middleware,
+ * health liveness probe, and protected Phase 1 module boundaries.
+ */
+export function createApp(options: CreateAppOptions = {}): Express {
+  const env = options.env ?? getBackendEnv();
+  const authResolver =
+    options.authResolver ?? createSupabaseAuthResolver(getSupabaseServiceClient(env));
+  const authenticate = createAuthMiddleware(authResolver);
+
   const app = express();
-
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
 
-  app.use(
-    helmet({
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-      contentSecurityPolicy: env.isProd ? undefined : false,
-    }),
-  );
-
-  const allowedOrigins = new Set([...env.CORS_ORIGINS, env.FRONTEND_URL]);
+  app.use(requestIdMiddleware);
+  app.use(helmet());
   app.use(
     cors({
-      origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) return callback(null, true);
-        return callback(new Error('Origin not allowed by CORS'));
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id', 'X-Razorpay-Signature'],
-      maxAge: 600,
+      origin: env.CORS_ALLOWED_ORIGINS,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Request-Id'],
+      credentials: false,
     }),
   );
+  app.use(express.json({ limit: '256kb' }));
 
-  // Razorpay requires the raw request body for signature verification.
-  app.use('/api/v1/payments/webhook', express.raw({ type: '*/*', limit: '2mb' }));
+  app.use('/health', createHealthRouter(env));
 
-  app.use(express.json({ limit: '1mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-  app.use(cookieParser());
-  app.use(compression());
+  for (const moduleSpec of MODULE_BOUNDARIES) {
+    app.use(moduleSpec.basePath, createModuleBoundaryRouter(moduleSpec, authenticate));
+  }
 
-  app.use(
-    pinoHttp({
-      logger,
-      genReqId: (req: Request) => {
-        const incoming = req.headers['x-request-id'];
-        return typeof incoming === 'string' && incoming.length < 100 ? incoming : crypto.randomUUID();
-      },
-      customLogLevel: (_req, res, err) => {
-        if (err || res.statusCode >= 500) return 'error';
-        if (res.statusCode >= 400) return 'warn';
-        return 'info';
-      },
-      serializers: {
-        req: (req) => ({ id: req.id, method: req.method, url: req.url }),
-        res: (res) => ({ statusCode: res.statusCode }),
-      },
-    }),
-  );
-
-  app.use((req, _res, next) => {
-    req.requestId = String((req as Request & { id?: string }).id ?? crypto.randomUUID());
-    next();
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    next(new NotFoundError(`Route '${req.method} ${req.originalUrl}' not found.`));
   });
 
-  app.get('/health', (_req, res) => {
-    res.json({ success: true, message: 'MediBook API is running', data: { uptime: process.uptime(), env: env.NODE_ENV } });
-  });
-
-  app.get('/health/ready', async (_req, res) => {
-    try {
-      await pool.query('select 1');
-      res.json({ success: true, message: 'Ready', data: { database: 'connected' } });
-    } catch {
-      res.status(503).json({ success: false, message: 'Database unavailable', code: 'NOT_READY' });
-    }
-  });
-
-  app.use('/api/v1', apiLimiter, routes);
-
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+  app.use(errorHandlerMiddleware);
 
   return app;
 }
-
-export const app = createApp();

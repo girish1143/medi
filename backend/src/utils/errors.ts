@@ -1,36 +1,68 @@
 export class AppError extends Error {
-  status: number;
-  code: string;
-  details?: unknown;
+  public readonly statusCode: number;
+  public readonly code: string;
+  public readonly details?: Record<string, unknown>;
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(
+    statusCode: number,
+    code: string,
+    message: string,
+    details?: Record<string, unknown>,
+  ) {
     super(message);
-    this.status = status;
+    this.name = new.target.name;
+    this.statusCode = statusCode;
     this.code = code;
-    this.details = details;
-    Error.captureStackTrace(this, this.constructor);
+    if (details !== undefined) {
+      this.details = details;
+    }
   }
 }
 
-export const Errors = {
-  unauthorized: (message = 'Authentication required') => new AppError(401, 'UNAUTHORIZED', message),
-  invalidCredentials: () => new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password'),
-  forbidden: (message = 'You do not have permission to perform this action') =>
-    new AppError(403, 'FORBIDDEN', message),
-  notFound: (entity = 'Resource') => new AppError(404, 'NOT_FOUND', `${entity} not found`),
-  conflict: (message = 'Request conflicts with the current state', code = 'CONFLICT') =>
-    new AppError(409, code, message),
-  validation: (message = 'Validation failed', details?: unknown) =>
-    new AppError(422, 'VALIDATION_ERROR', message, details),
-  slotUnavailable: (message = 'This time slot is no longer available') =>
-    new AppError(409, 'SLOT_UNAVAILABLE', message),
-  paymentRequired: (message = 'Payment is required to confirm this appointment') =>
-    new AppError(402, 'PAYMENT_REQUIRED', message),
-  tooManyRequests: (message = 'Too many requests, please try again later') =>
-    new AppError(429, 'RATE_LIMITED', message),
-  internal: (message = 'Something went wrong') => new AppError(500, 'INTERNAL_ERROR', message),
-};
+export class ValidationError extends AppError {
+  constructor(message = 'Request validation failed.', details?: Record<string, unknown>) {
+    super(400, 'VALIDATION_ERROR', message, details);
+  }
+}
 
-export function isPgError(error: unknown): error is { code: string; constraint?: string; message: string } {
-  return typeof error === 'object' && error !== null && 'code' in error;
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Authentication credentials are missing or invalid.') {
+    super(401, 'UNAUTHORIZED', message);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(code = 'FORBIDDEN_ROLE', message = 'You do not have permission for this action.') {
+    super(403, code, message);
+  }
+}
+
+export class ConsentRequiredError extends AppError {
+  constructor(
+    message = 'Explicit patient consent is required before accessing or sharing enquiry data.',
+  ) {
+    super(403, 'CONSENT_REQUIRED', message);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message = 'Requested resource was not found.') {
+    super(404, 'RESOURCE_NOT_FOUND', message);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message = 'Operation conflicts with current resource state.') {
+    super(409, 'STATE_CONFLICT', message);
+  }
+}
+
+export class NotImplementedError extends AppError {
+  constructor(moduleName: string, routeDescription: string) {
+    super(
+      501,
+      'NOT_IMPLEMENTED',
+      `Module '${moduleName}' route (${routeDescription}) is reserved in Phase 1 and scheduled for Phase 2+ implementation.`,
+    );
+  }
 }
